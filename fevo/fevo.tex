@@ -1,0 +1,137 @@
+% !TEX TS-program = xelatex
+\documentclass[a4paper,6pt,oneside]{memoir}
+%\usepackage{fontspec}
+\usepackage[newdimens]{labels}
+\usepackage{tabularx,booktabs}
+\usepackage{mathtools}
+\usepackage{graphicx}
+\usepackage{pgfplots, pgfplotstable}
+\usepackage{color}
+%\setmainfont[Numbers={OldStyle,Monospaced}]{Brill}
+%\setsansfont{Source Sans Pro Light}
+\LabelCols=2%
+\LabelRows=5%
+\LeftPageMargin=18.0mm%
+\RightPageMargin=18.0mm%
+\TopPageMargin=1.5mm%
+\BottomPageMargin=1.5mm%
+\InterLabelColumn=1.5mm%
+\InterLabelRow=5.0mm%
+
+\LeftLabelBorder=3mm%
+\RightLabelBorder=3mm%
+\TopLabelBorder=1mm%
+\BottomLabelBorder=3mm%
+
+\numberoflabels=10%
+\LabelGridtrue%  <-- or \LabelGridfalse
+\newcommand{\phonei}{+44\textendash2323\textendash323232}
+\newcommand{\phoneii}{+44\textendash7999\textendash797979}
+\newcommand{\emaili}{carlos@dickens.org}
+%
+
+\newcommand{\HRule}{\rule{\linewidth}{0.5mm}}
+
+% Create a function for generating inverse normally distributed numbers using the Box–Muller transform
+\pgfmathdeclarefunction{invgauss}{2}{%
+  \pgfmathparse{sqrt(-2*ln(#1))*cos(deg(2*pi*#2))}%
+}
+% Code for brownian motion
+\makeatletter
+\pgfplotsset{every axis/.append style={very thick,width=13cm}}
+\pgfplotsset{
+	ticks=none,
+    table/.cd,
+    brownian motion/.style={
+        create on use/brown/.style={
+            create col/expr accum={
+                (\coordindex>0)*(
+                    max(
+                        min(
+                            invgauss(rnd,rnd)*0.1+\pgfmathaccuma,
+                            \pgfplots@brownian@max
+                        ),
+                        \pgfplots@brownian@min
+                    )
+                ) + (\coordindex<1)*\pgfplots@brownian@start
+            }{\pgfplots@brownian@start}
+        },
+        y=brown, x expr={\coordindex},
+        brownian motion/.cd,
+        #1,
+        /.cd
+    },
+    brownian motion/.cd,
+            min/.store in=\pgfplots@brownian@min,
+        min=-inf,
+            max/.store in=\pgfplots@brownian@max,
+            max=inf,
+            start/.store in=\pgfplots@brownian@start,
+        start=0
+}
+\makeatother
+
+% Initialise an empty table with a certain number of rows
+\pgfplotstablenew{50}\loadedtable % How many steps?
+
+
+\begin{document}
+\definecolor{airforceblue}{rgb}{0.36, 0.54, 0.66}
+\definecolor{coolblack}{rgb}{0.0, 0.0, 0.6}
+%\color{coolblack}
+%\begin{center}
+%\begin{tabular}{|c|c|c|c|}%{\textwidth}%{ | s | s | Y | Y |}
+%\toprule
+%\multicolumn{2}{|c|}{Greek}  & Call & Put \\ 
+%\midrule
+%Delta & $\displaystyle \frac{\partial V}{\partial S}$       &  $N(d_+)$    & $ - N(-d_+) = N(d_+) - 1$        \\ 
+%\midrule
+%Gamma & $\displaystyle \frac{\partial^2 V}{\partial S^2}$   & \multicolumn{2}{c|}{$\displaystyle \frac{N'(d_+)}{\sigma S \sqrt{T}} = \frac{\phi(d_+)}{\sigma S \sqrt{T}}$}     \\ 
+%\midrule
+%Vega  & $\displaystyle \frac{\partial V}{\partial \sigma}$   & \multicolumn{2}{c|}{$S \phi(d_+) \sqrt{T}$}     \\ 
+%\midrule
+%Theta & $\displaystyle \frac{\partial V}{\partial t}$       & $ \displaystyle -\frac{S\phi(d_+)\sigma}{2\sqrt{T}} - rKe^{-rT}N(d_-)$ & $ \displaystyle -\frac{S\phi'(d_+)\sigma}{2\sqrt{T}} + rKe^{-rT}N(-d_-)$       \\ 
+%\midrule
+%Rho   & $\displaystyle \frac{\partial V}{\partial r}$       &  $KTe^{-rT}N(d_-)$  & $-KTe^{-rT}N(-d_-)$       \\ 
+%\bottomrule
+%\end{tabular}
+%\end{center}
+\newcolumntype{M}{>{\centering\arraybackslash}c}
+\newcolumntype{N}{@{}m{0pt}@{}}
+\addresslabel[\fboxsep=2mm]{%
+    \tiny{% 
+    \begin{center}
+    \tabcolsep=0.0mm
+    \setlength\extrarowheight{1mm}
+\begin{tabular}{|M|M|M|N}%{\textwidth}%{ | s | s | Y | Y |}
+\hline
+$\$$ &    $S N(d_+) - K e^{-rT} N(d_-)$ & $Ke^{-rT} N(-d_-) - S N(-d_+)$ & \\
+\hline
+$\delta$ &    $N(d_+)$    & $ - N(-d_+) = N(d_+) - 1$    &    \\ 
+\hline
+$\theta$ & $ -\frac{S\phi(d_+)\sigma}{2\sqrt{T}} - rKe^{-rT}N(d_-)$ & $ -\frac{S\phi'(d_+)\sigma}{2\sqrt{T}} + rKe^{-rT}N(-d_-)$   &  \\ 
+\hline
+$\rho$   & $~~~~~~~~~~~~~~~KTe^{-rT}N(d_-)$ & $-KTe^{-rT}N(-d_-)$       \\ 
+\hline
+$\gamma$ &   \multicolumn{2}{c|}{$~~~~~N'(d_+) / (\sigma S \sqrt{T}) = \phi(d_+) / (\sigma S \sqrt{T}) $}  &   \\[3pt]
+$\mathcal{V}$     & \multicolumn{2}{M|}{$~~~~~~S \phi(d_+) \sqrt{T}$, \scalebox{.9}{{\scriptsize{$~~d_{\pm} = \frac{ln\frac{S}{K} + (r \pm \frac{1}{2}\sigma^2)T}{\sigma\sqrt{T}}~~$}}}}   &  \\[3pt]
+\hline
+\end{tabular}
+\end{center}
+\vspace{5mm}
+%    \raggedright%
+%    {\Large\scshape Charles Dickens}\\[1ex]
+%    \textit{Narrative Typography}\      \vspace{4ex}
+%    48 Doughty Street\      Holborn\        London\     {\textsc{uk: wc1n 2lx}}\\   
+%    \vspace{4ex}%
+%    \hrule%
+%    \vspace{4ex}%
+\vspace{-4.5mm}
+\scalebox{.71}{$~~~~~~~~\frac{\partial V}{\partial t} + \mu S \frac{\partial V} {\partial S}  + \frac{1}{2} \sigma^2 S^2 \frac{\partial^2 V}{\partial S^2} - rV = 0,~\tau = T-t,~S = e^y $}\\
+\vspace{1.5mm}
+\scalebox{.71}{$~~~~~~~~\frac{\partial V}{\partial \tau} - (\mu - \frac{\sigma^2}{2}) \frac{\partial V} {\partial y}  - \frac{\sigma^2}{2} \frac{\partial^2 V}{\partial y^2} - rV = 0~~~~$ } \\
+\vspace{3mm}
+\scalebox{.71}{$~~~~~~~~S_t = S_0 \exp \left((\mu - \frac{1}{2}\sigma^2) t + \sigma^2 W_t\right)$}
+}%
+}
+\end{document}
